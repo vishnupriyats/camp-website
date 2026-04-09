@@ -75,6 +75,7 @@ var express        = require("express"),
 var commentRoutes    = require("./routes/comments"),
     campgroundRoutes = require("./routes/campgrounds"),
     indexRoutes      = require("./routes/index");
+	adminRoutes      = require("./routes/admin");
 
 mongoose.connect("mongodb://localhost/yelp_camp");
 
@@ -117,6 +118,7 @@ app.use(function(req, res, next) {
 app.use("/", indexRoutes);
 app.use("/campgrounds", campgroundRoutes);
 app.use("/campgrounds/:id/comments", commentRoutes);
+app.use("/admin", adminRoutes);
 
 app.listen(process.env.PORT || 3000, process.env.IP, function() {
     console.log("listening to the port 3000");

@@ -1,0 +1,91 @@
+<%- include("../partials/header") %>
+<div class="container">
+    <h1 style="text-align: center; margin: 30px auto;">Admin Dashboard</h1>
+    
+    <!-- Stats Cards -->
+    <div class="row text-center" style="margin-bottom: 30px;">
+        <div class="col-md-4">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Total Users</h5>
+                    <p class="card-text"><strong><%= userCount %></strong></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Total Campgrounds</h5>
+                    <p class="card-text"><strong><%= campgroundCount %></strong></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Total Comments</h5>
+                    <p class="card-text"><strong><%= commentCount %></strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User List -->
+    <h2> Users List </h2>
+    <table class="table table-bordered table-striped">
+        <thead class="thead-dark">
+            <tr>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% users.forEach(function(user) { %>
+                <tr>
+                    <td><%= user.username %></td>
+                    <td><%= user.isAdmin ? "Admin" : "User" %></td>
+                    <td>
+                        <% if (user._id.toString() !== currentUser._id.toString()) { %>
+                            <form action="/admin/users/<%= user._id %>?_method=DELETE" method="POST" style="display: inline;">
+                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            </form>
+                        <% } else { %>
+                            <span class="badge badge-secondary"> YOU </span>
+                        <% } %>
+                    </td>
+                </tr>
+            <% }); %>
+        </tbody>
+    </table>
+
+    <!-- Campground List -->
+    <h2> Campgrounds List </h2>
+    <table class="table table-bordered table-striped">
+        <thead class="thead-dark">
+            <tr>
+                <th>Name</th>
+                <th>Author</th>
+                <th>Price</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+        <tbody>
+            <% campgrounds.forEach(function(campground) { %>
+                <tr>
+                    <td><%= campground.name %></td>
+                    <td><%= campground.author.username %></td>
+                    <td>$<%= campground.price %>/night</td>
+                    <td>
+                        <a class="btn btn-sm btn-warning" href="/campgrounds/<%= campground._id %>/edit">Edit</a>
+                        <form method="POST" action="/campgrounds/<%= campground._id %>?_method=DELETE" style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            <% }); %>
+        </tbody>
+    </table>
+</div>
+
+<%- include("../partials/footer") %>
