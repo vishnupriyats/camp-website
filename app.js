@@ -57,7 +57,7 @@ app.use("/campgrounds/:id/comments",commentRoutes);
 app.listen(process.env.PORT || 3000,process.env.IP,function(){
 	console.log("listening to the port 3000");
 }); */
-
+require("dotenv").config();
 var express        = require("express"),
     app            = express(),
     bodyParser     = require("body-parser"),
@@ -83,10 +83,16 @@ app.set("view engine", "ejs");
 app.use(express.static(__dirname + "/public"));
 
 // session must come before passport and methodOverride
+// Added the cookie configuration to set httpOnly and expiration time
+
 app.use(require("express-session")({
-    secret: "Believe in you",
+    secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
+    cookie: {
+    httpOnly: true,
+    expires: new Date(Date.now() + 1000 * 60 * 60 * 24)
+}
 }));
 
 app.use(methodOverride("_method"));
