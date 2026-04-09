@@ -58,6 +58,7 @@ app.listen(process.env.PORT || 3000,process.env.IP,function(){
 	console.log("listening to the port 3000");
 }); */
 require("dotenv").config();
+var rateLimit = require("express-rate-limit");
 var express        = require("express"),
     app            = express(),
     bodyParser     = require("body-parser"),
@@ -113,6 +114,15 @@ app.use(function(req, res, next) {
     res.locals.success = req.flash("success");
     next();
 });
+
+// rate limiting
+var loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // limit each IP to 5 login attempts per windowMs
+    message: "Too many login attempts, please try again after 15 minutes"
+});
+
+app.post("/login", loginLimiter);
 
 // routes
 app.use("/", indexRoutes);

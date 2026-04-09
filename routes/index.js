@@ -94,6 +94,30 @@ router.get("/register", function(req, res) {
 router.post("/register", async function(req, res) {
     try {
         console.log("register hit", req.body);
+
+        // username validation
+        var username = req.body.username;
+        var usernameRegex = /^[a-zA-Z0-9]{3,}$/;
+        if(!usernameRegex.test(username)) {
+            req.flash("error", "Username must be at least 3 characters and contain only letters and numbers");
+            return res.redirect("/register");
+        }
+
+        // check duplicate username
+        var existingUser = await User.findOne({username: username});
+        if(existingUser) {
+            req.flash("error", "Username already exists, please choose a different one");
+            return res.redirect("/register");
+        }
+        
+        // password strength validation
+        var password = req.body.password;
+        var passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        if(!passwordRegex.test(password)) {
+            req.flash("error", "Password must be at least 8 characters and include uppercase, lowercase, number and special character");
+            return res.redirect("/register");
+        }
+
         var newUser = new User({username: req.body.username});
         var registeredUser = await User.register(newUser, req.body.password);
         await new Promise((resolve, reject) => {
