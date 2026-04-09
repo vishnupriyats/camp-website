@@ -13,7 +13,7 @@
 		<% campgrounds.forEach(function(camp){ %>
 		<div class='col-md-3' class='col-sm-6'>
 			<div class="card">
-				<img class="card-img-top" src="<%= camp.image %>" >
+				<img class="card-img-top" src="<%= camp.image %>" onerror="this.onerror=null;this.src='https://placehold.co/800x400?text=No+Image';">
 				<div class='card-body'>
 					<h4 class="card-title"><%= camp.name  %></h4>
 					<a href="/campgrounds/<%=camp._id %>" class="btn btn-primary">more info!</a>

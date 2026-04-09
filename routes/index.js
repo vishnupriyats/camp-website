@@ -1,4 +1,4 @@
-var express 	= require("express");
+/* var express 	= require("express");
 var router 		= express.Router();
 var passport 	= require("passport");
 var User		= require("../models/user")
@@ -20,7 +20,13 @@ router.get("/register",function(req,res){
 //register create route
 
 router.post("/register",function(req,res){
-	var newUser = new User({username: req.body.username});
+        console.log("register hit", req.body);
+        var newUser = new User({username: req.body.username});
+
+/* router.post("/register",function(req,res){
+	var newUser = new User({username: req.body.username}); */
+
+/*	
 	User.register(newUser ,req.body.password,function(err,user){
 		if(err){
 			req.flash("error",err.message)
@@ -32,7 +38,7 @@ router.post("/register",function(req,res){
 		});
 	});
 	
-});
+}); 
 
 
 //login form
@@ -65,5 +71,68 @@ function isLoggedIn(req,res,next){
 	}
 	res.redirect("/login");
 }
+
+module.exports = router; */
+
+
+var express  = require("express");
+var router   = express.Router();
+var passport = require("passport");
+var User     = require("../models/user");
+
+//home page
+router.get("/", function(req, res) {
+    res.render("landing");
+});
+
+//register form
+router.get("/register", function(req, res) {
+    res.render("register");
+});
+
+//register create route
+router.post("/register", async function(req, res) {
+    try {
+        console.log("register hit", req.body);
+        var newUser = new User({username: req.body.username});
+        var registeredUser = await User.register(newUser, req.body.password);
+        await new Promise((resolve, reject) => {
+            req.login(registeredUser, function(err) {
+                if(err) reject(err);
+                else resolve();
+            });
+        });
+        req.flash("success", "Welcome to Yelpcamp " + registeredUser.username);
+        res.redirect("/campgrounds");
+    } catch(err) {
+        console.log(err);
+        req.flash("error", err.message);
+        res.redirect("/register");
+    }
+});
+
+//login form
+router.get("/login", function(req, res) {
+    res.render("login");
+});
+
+//login authenticate
+router.post("/login", passport.authenticate("local", {
+    successRedirect: "/campgrounds",
+    failureRedirect: "/login",
+    failureFlash: true
+}));
+
+//logout
+router.get("/logout", function(req, res) {
+    req.logout(function(err) {
+        if(err) {
+            console.log(err);
+            return res.redirect("/campgrounds");
+        }
+        req.flash("success", "Logged you out!");
+        res.redirect("/campgrounds");
+    });
+});
 
 module.exports = router;

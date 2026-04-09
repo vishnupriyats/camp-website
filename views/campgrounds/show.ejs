@@ -12,7 +12,7 @@
 		</div>
 		<div class="col-md-9">
 			<div class="card">
-				<img class="card-img-top" src="<%= campground.image %>" >
+				<img class="card-img-top" src="<%= campground.image %>" onerror="this.onerror=null;this.src='https://placehold.co/800x400?text=No+Image';">
 				<h4><a class='card-title' href="#"><%= campground.name %></a><span class="float-right">$<%= campground.price %>/night</span></h4>
 				<div class='card-text'>
 					<p><%- campground.description %></p>
