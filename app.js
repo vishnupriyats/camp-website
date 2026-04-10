@@ -1,7 +1,5 @@
+
 require("dotenv").config();
-var mongoSanitize = require("express-mongo-sanitize");
-//var xssClean = require("xss-clean");
-var rateLimit = require("express-rate-limit");
 var express        = require("express"),
     app            = express(),
     bodyParser     = require("body-parser"),
@@ -15,15 +13,47 @@ var express        = require("express"),
     User           = require("./models/user"),
     seedDB         = require("./seeds");
 
+var helmet = require("helmet");
+var cors = require("cors");
+var mongoSanitize = require("express-mongo-sanitize");
+//var xssClean = require("xss-clean");
+var rateLimit = require("express-rate-limit");
+
 //requiring routes
 var commentRoutes    = require("./routes/comments"),
     campgroundRoutes = require("./routes/campgrounds"),
     indexRoutes      = require("./routes/index");
 	adminRoutes      = require("./routes/admin");
 
+
 mongoose.connect("mongodb://localhost/yelp_camp");
 
 app.use(bodyParser.urlencoded({extended: true}));
+
+//hide the tech stack from hackers
+app.disable("x-powered-by");
+
+// security headers
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            styleSrc: ["'self'", "https://stackpath.bootstrapcdn.com", "https://maxcdn.bootstrapcdn.com", "'unsafe-inline'"],
+            scriptSrc: ["'self'", "https://code.jquery.com", "https://cdnjs.cloudflare.com", "https://maxcdn.bootstrapcdn.com", "'unsafe-inline'", "'unsafe-hashes'"],
+            imgSrc: ["'self'", "https:", "data:"],
+            fontSrc: ["'self'", "https://maxcdn.bootstrapcdn.com"],
+            connectSrc: ["'self'", "https://stackpath.bootstrapcdn.com", "https://maxcdn.bootstrapcdn.com", "https://cdnjs.cloudflare.com", "https://code.jquery.com"],
+            scriptSrcAttr: ["'unsafe-inline'", "'unsafe-hashes'"]
+        }
+    }
+}));
+
+// CORS configuration
+app.use(cors({
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true
+}));
 
 // prevent NoSQL injection
 app.use(mongoSanitize({
@@ -32,7 +62,6 @@ app.use(mongoSanitize({
 
 // prevent XSS attacks
 //app.use(xssClean());
-
 
 app.set("view engine", "ejs");
 app.use(express.static(__dirname + "/public"));
