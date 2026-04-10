@@ -2,6 +2,28 @@ var express    = require("express");
 var router     = express.Router();
 var Campground = require("../models/campground");
 var middleware = require("../middleware");
+const { body, validationResult } = require("express-validator");
+
+//Input validation and sanitization
+var campgroundValidation = [
+    body("campground[name]")
+        .trim()
+        .notEmpty().withMessage("Campground name is required")
+        .isLength({min: 3, max: 100}).withMessage("Name must be between 3 and 100 characters"),
+    body("campground[price]")
+        .trim()
+        .notEmpty().withMessage("Price is required")
+        .isNumeric().withMessage("Price must be a number")
+        .isFloat({min: 0}).withMessage("Price must be a positive number"),
+    body("campground[image]")
+        .trim()
+        .notEmpty().withMessage("Image URL is required")
+        .isURL().withMessage("Image must be a valid URL"),
+    body("campground[description]")
+        .trim()
+        .notEmpty().withMessage("Description is required")
+        .isLength({min: 10, max: 1000}).withMessage("Description must be between 10 and 1000 characters")
+];
 
 //index route - show all items
 router.get("/", async function(req, res) {
@@ -13,13 +35,25 @@ router.get("/", async function(req, res) {
     }
 });
 
-//create route-add new items
-router.post("/", middleware.isLoggedIn, async function(req, res) {
+//new - show the form
+router.get("/new", middleware.isLoggedIn, function(req, res) {
+    res.render("campgrounds/new");
+});
+
+//create route
+router.post("/", middleware.isLoggedIn, campgroundValidation, async function(req, res) {
     try {
-        var name = req.body.name;
-        var image = req.body.image;
-        var desc = req.body.description;
-        var price = req.body.price;
+        var errors = validationResult(req);
+        if(!errors.isEmpty()) {
+            errors.array().forEach(function(error) {
+                req.flash("error", error.msg);
+            });
+            return res.redirect("/campgrounds/new");
+        }
+        var name  = req.body.campground.name;
+        var image = req.body.campground.image;
+        var desc  = req.body.campground.description;
+        var price = req.body.campground.price;
         var author = {
             id: req.user._id,
             username: req.user.username
@@ -33,13 +67,8 @@ router.post("/", middleware.isLoggedIn, async function(req, res) {
     }
 });
 
-//new - show the form
-router.get("/new", middleware.isLoggedIn, function(req, res) {
-    res.render("campgrounds/new");
-});
-
 //show route
-router.get("/:id", async function(req, res) {
+router.get("/:id", middleware.validateId, async function(req, res) {
     try {
         var foundCampground = await Campground.findById(req.params.id).populate("comments");
         if(!foundCampground) {
@@ -53,8 +82,8 @@ router.get("/:id", async function(req, res) {
     }
 });
 
-//edit route - edit form
-router.get("/:id/edit", middleware.checkCampgroundOwnership, async function(req, res) {
+//edit route
+router.get("/:id/edit", middleware.validateId, middleware.checkCampgroundOwnership, async function(req, res) {
     try {
         var foundCampground = await Campground.findById(req.params.id);
         res.render('campgrounds/edit', {campground: foundCampground});
@@ -63,9 +92,16 @@ router.get("/:id/edit", middleware.checkCampgroundOwnership, async function(req,
     }
 });
 
-//update route to db
-router.put("/:id", middleware.checkCampgroundOwnership, async function(req, res) {
+//update route
+router.put("/:id", middleware.validateId, middleware.checkCampgroundOwnership, campgroundValidation, async function(req, res) {
     try {
+        var errors = validationResult(req);
+        if(!errors.isEmpty()) {
+            errors.array().forEach(function(error) {
+                req.flash("error", error.msg);
+            });
+            return res.redirect("/campgrounds/" + req.params.id + "/edit");
+        }
         await Campground.findByIdAndUpdate(req.params.id, req.body.campground);
         res.redirect("/campgrounds/" + req.params.id);
     } catch(err) {
@@ -75,22 +111,9 @@ router.put("/:id", middleware.checkCampgroundOwnership, async function(req, res)
 });
 
 //destroy route
-/* router.delete("/:id", middleware.checkCampgroundOwnership, async function(req, res) {
-    console.log("DELETE route hit", req.params.id);
+router.delete("/:id", middleware.validateId, middleware.checkCampgroundOwnership, async function(req, res) {
     try {
-        await Campground.findByIdAndRemove(req.params.id);
-        req.flash("success", "Successfully deleted a campground");
-        res.redirect("/campgrounds");
-    } catch(err) {
-        res.redirect("/campgrounds");
-    }
-}); */
-
-router.delete("/:id", middleware.checkCampgroundOwnership, async function(req, res) {
-    console.log("DELETE route hit", req.params.id);
-    try {
-        var deleted = await Campground.findByIdAndDelete(req.params.id);
-        console.log("Deleted:", deleted);
+        await Campground.findByIdAndDelete(req.params.id);
         req.flash("success", "Successfully deleted a campground");
         res.redirect("/campgrounds");
     } catch(err) {

@@ -1,3 +1,4 @@
+var mongoose = require("mongoose");
 var Campground = require("../models/campground");
 var Comment    = require("../models/comment");
 var middlewareObj = {};
@@ -64,6 +65,14 @@ middlewareObj.isAdmin = function(req, res, next) {
     }
     req.flash("error", "You need to be an admin to do that");
     res.redirect("back");
+}
+
+middlewareObj.validateId = function(req, res, next) {
+    if(!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        req.flash("error", "Invalid campground ID");
+        return res.redirect("/campgrounds");
+    }
+    next();
 }
 
 module.exports = middlewareObj;

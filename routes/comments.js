@@ -104,6 +104,14 @@ var router     = express.Router({mergeParams: true});
 var Campground = require("../models/campground");
 var Comment    = require("../models/comment");
 var middleware = require("../middleware");
+const { body, validationResult } = require("express-validator");
+
+// Validation middleware for campground input
+var commentValidation = [
+    body("comment[text]").trim()
+    .notEmpty().withMessage("Comment text cannot be empty")
+    .isLength({min: 1,max: 500}).withMessage("Comment must be between 1 and 500 characters")
+];
 
 //new route
 router.get("/new", middleware.isLoggedIn, async function(req, res) {
@@ -121,8 +129,14 @@ router.get("/new", middleware.isLoggedIn, async function(req, res) {
 });
 
 //create route
-router.post("/", middleware.isLoggedIn, async function(req, res) {
+router.post("/", middleware.isLoggedIn, commentValidation,async function(req, res) {
     try {
+        var errors = validationResult(req);
+        if(!errors.isEmpty()) {
+            var errorMessages = errors.array().map(e => e.msg);
+            req.flash("error", errorMessages.join(", "));
+            return res.redirect("back");
+        }
         var campground = await Campground.findById(req.params.id);
         if(!campground) {
             req.flash("error", "Campground not found");
@@ -162,8 +176,17 @@ router.get("/:comment_id/edit", middleware.checkCommentOwnership, async function
 });
 
 //update route
-router.put("/:comment_id", middleware.checkCommentOwnership, async function(req, res) {
+router.put("/:comment_id", middleware.checkCommentOwnership, commentValidation, async function(req, res) {
+    console.log("comment update body:", req.body);
+    console.log("validation errors:", validationResult(req).array());
     try {
+        var errors = validationResult(req);
+        if(!errors.isEmpty()) {
+            errors.array().forEach(function(error) {
+                req.flash("error", error.msg);
+            });
+            return res.redirect("back");
+        }
         await Comment.findByIdAndUpdate(req.params.comment_id, req.body.comment);
         res.redirect("/campgrounds/" + req.params.id);
     } catch(err) {
