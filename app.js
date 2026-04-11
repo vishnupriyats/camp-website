@@ -76,6 +76,8 @@ app.use(require("express-session")({
     saveUninitialized: false,
     cookie: {
     httpOnly: true,
+	sameSite: "strict",
+    secure: false, // set to true in production with HTTPS
     expires: new Date(Date.now() + 1000 * 60 * 60 * 24)
 }
 }));
