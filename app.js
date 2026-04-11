@@ -18,6 +18,7 @@ var cors = require("cors");
 var mongoSanitize = require("express-mongo-sanitize");
 //var xssClean = require("xss-clean");
 var rateLimit = require("express-rate-limit");
+var morgan = require("morgan");
 
 //requiring routes
 var commentRoutes    = require("./routes/comments"),
@@ -80,6 +81,8 @@ app.use(require("express-session")({
 }));
 
 app.use(methodOverride("_method"));
+// logging
+app.use(morgan("dev"));
 app.use(flash());
 
 // passport configuration
@@ -111,6 +114,23 @@ app.use("/", indexRoutes);
 app.use("/campgrounds", campgroundRoutes);
 app.use("/campgrounds/:id/comments", commentRoutes);
 app.use("/admin", adminRoutes);
+
+// 404 handler
+app.use(function(req, res, next) {
+    res.status(404).render("error", {
+        code: 404,
+        message: "Page not found"
+    });
+});
+
+// global error handler
+app.use(function(err, req, res, next) {
+    console.error(err.stack);
+    res.status(err.status || 500).render("error", {
+        code: err.status || 500,
+        message: "Something went wrong. Please try again later."
+    });
+});
 
 app.listen(process.env.PORT || 3000, process.env.IP, function() {
     console.log("listening to the port 3000");
