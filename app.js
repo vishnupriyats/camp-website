@@ -19,10 +19,9 @@ var mongoSanitize = require("express-mongo-sanitize");
 //var xssClean = require("xss-clean");
 var rateLimit = require("express-rate-limit");
 var morgan = require("morgan");
-
-//https implementation
 var fs = require("fs");
 var https = require("https");
+
 //requiring routes
 var commentRoutes    = require("./routes/comments"),
     campgroundRoutes = require("./routes/campgrounds"),
@@ -34,10 +33,15 @@ mongoose.connect("mongodb://localhost/yelp_camp");
 
 app.use(bodyParser.urlencoded({extended: true}));
 
-//hide the tech stack from hackers
+//Vulnerability: X-Powered-By header reveals framework to the attackers.
+//Security fix: Disabled X-Powered-By header.
+
 app.disable("x-powered-by");
 
-// security headers
+
+// Vulnerability: No security headers were set.
+// Security fix: Implemented Helmet to set secure HTTP headers
+
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
@@ -52,26 +56,27 @@ app.use(helmet({
     }
 }));
 
-// CORS configuration
+// Vulnerability: No CORS Policy was implemented, allowed all requests from any domain.
+// Security fix: Implemented CORS with specific allowed origins and methods
+
 app.use(cors({
     origin: "http://localhost:3000",
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true
 }));
 
-// prevent NoSQL injection
+// Vulnerability: No input sanitization, attackers can easily inject malicious MongoDB operators.
+// Security fix: NoSQL injection prevention
+
 app.use(mongoSanitize({
     replaceWith: '_'
 }));
 
-// prevent XSS attacks
-//app.use(xssClean());
-
 app.set("view engine", "ejs");
 app.use(express.static(__dirname + "/public"));
 
-// session must come before passport and methodOverride
-// Added the cookie configuration to set httpOnly and expiration time
+// Vulnerability: No cookie security settings
+//Security fix: Session management with secure cookies
 
 app.use(require("express-session")({
     secret: process.env.SESSION_SECRET,
@@ -105,7 +110,9 @@ app.use(function(req, res, next) {
     next();
 });
 
-// rate limiting
+//Vulnerability: Attackers can make unlimited login attacks
+//Security fix: Limiting the login attempts
+
 var loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 5, // limit each IP to 5 login attempts per windowMs
@@ -137,9 +144,11 @@ app.use(function(err, req, res, next) {
     });
 });
 
-//http to https redirection
-var sslOptions = {
-    key: fs.readFileSync("certificates/key.pem"),
+//Vulnerability: No HTTPS implementation, attackers can intercept data in transit.
+//Security fix: Implemented HTTPS with self-signed certificates
+
+var sslOptions={
+	key: fs.readFileSync("certificates/key.pem"),
     cert: fs.readFileSync("certificates/cert.pem")
 };
 
