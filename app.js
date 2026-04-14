@@ -20,6 +20,9 @@ var mongoSanitize = require("express-mongo-sanitize");
 var rateLimit = require("express-rate-limit");
 var morgan = require("morgan");
 
+//https implementation
+var fs = require("fs");
+var https = require("https");
 //requiring routes
 var commentRoutes    = require("./routes/comments"),
     campgroundRoutes = require("./routes/campgrounds"),
@@ -77,7 +80,7 @@ app.use(require("express-session")({
     cookie: {
     httpOnly: true,
 	sameSite: "strict",
-    secure: false, // set to true in production with HTTPS
+    secure: true, 
     expires: new Date(Date.now() + 1000 * 60 * 60 * 24)
 }
 }));
@@ -134,6 +137,24 @@ app.use(function(err, req, res, next) {
     });
 });
 
+//http to https redirection
+var sslOptions = {
+    key: fs.readFileSync("certificates/key.pem"),
+    cert: fs.readFileSync("certificates/cert.pem")
+};
+
+
+app.use(function(req, res, next) {
+    if(!req.secure) {
+        return res.redirect("https://" + req.headers.host + req.url);
+    }
+    next();
+});
+
+https.createServer(sslOptions, app).listen(3443, function() {
+    console.log("HTTPS server listening on port 3443");
+});
+
 app.listen(process.env.PORT || 3000, process.env.IP, function() {
-    console.log("listening to the port 3000");
+    console.log("HTTP server listening on port 3000");
 });
