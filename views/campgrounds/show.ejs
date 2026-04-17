@@ -16,9 +16,6 @@
 				<h4><a class='card-title' href="#"><%= campground.name %></a><span class="float-right">$<%= campground.price %>/night</span></h4>
 				<div class='card-text'>
 
-					<!-- Vulnerability: campground.description was rendered using  <%- -->
-					<!-- Security fix: Use <%= so malicious code will be rendered as plain test and not executed -->
-					 
 					<p><%= campground.description %></p>
 					<p><em>Submitted by <%= campground.author.username %> </em></p>
 					<% if(currentUser && campground.author.id.equals(currentUser._id)){ %>
