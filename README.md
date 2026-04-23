@@ -197,6 +197,37 @@ Security was not taken into account in the initial application. There were 7 fea
 
 ---
 
+---
+
+## My Contributions
+
+This project was originally developed as a basic learning exercise without any security considerations. The following contributions were made entirely by me as part of this CA2 project:
+
+### 1. Codebase Modernisation (feature/bug-fixes)
+The original codebase was incompatible with modern package versions. All Mongoose callback-based queries were converted to async/await, Passport 0.7 compatibility was fixed, middleware ordering was corrected, and deprecated methods were replaced.
+
+### 2. Session Security (feature/session-management)
+Hardcoded session secret moved to environment variables via dotenv. Cookie hardened with httpOnly, sameSite:strict, secure:true flags and 24-hour expiry.
+
+### 3. Role-Based Access Control (feature/authorization)
+Added role field to User schema. Implemented isAdmin middleware. Built admin dashboard showing system-wide statistics. Admin can manage all users, campgrounds and comments.
+
+### 4. Authentication Hardening (feature/authentication)
+Implemented rate limiting (5 attempts/15 mins), password strength validation, username validation, duplicate username prevention and failed login flash messages.
+
+### 5. Input Validation & Sanitisation (feature/input-validation)
+Implemented express-validator rules on all forms. Added express-mongo-sanitize for NoSQL injection prevention. Fixed XSS vulnerability in campground description view. Added MongoDB ObjectId validation in URL parameters.
+
+### 6. Security Headers (feature/security-headers)
+Configured Helmet.js adding 10 security headers. Set up Content Security Policy whitelisting trusted CDN sources. Configured CORS to restrict requests to trusted origin. Removed Express framework signature.
+
+### 7. Error Handling & Logging (feature/error-handling)
+Added Morgan HTTP request logger for audit trail. Implemented global error handler hiding sensitive details. Created custom 404 page.
+
+### 8. HTTPS Implementation (feature/https)
+Generated self-signed SSL certificate using OpenSSL RSA 4096-bit. Configured HTTPS server on port 3443 with HTTP-to-HTTPS redirect.
+
+---
 ## References
 - OWASP Top 10: https://owasp.org/www-project-top-ten/
 - Helmet.js: https://helmetjs.github.io/
