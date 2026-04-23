@@ -171,6 +171,17 @@ SAST Testing Tools were used.
 
 ---
 
+
+## Known Limitations
+| Issue | Reason |
+|---|---|
+| Self-signed certificate | Requires public domain for trusted cert |
+| unsafe-inline in CSP | Bootstrap uses inline event handlers |
+| request package vulnerabilities | Deprecated package, no fix available |
+
+---
+
+
 ## Security Improvements Summary
 
 Security was not taken into account in the initial application. There were 7 feature branches that were improved as follows:
@@ -183,3 +194,11 @@ Security was not taken into account in the initial application. There were 7 fea
 - **feature/security-headers** - CSP, CORS, Helmet.js.
 - **feature/error-handling** — Global error logging and error handler.
 - **feature/https** - HTTPS using self-signed certificate.
+
+---
+
+## References
+- OWASP Top 10: https://owasp.org/www-project-top-ten/
+- Helmet.js: https://helmetjs.github.io/
+- Express Security: https://expressjs.com/en/advanced/best-practice-security.html
+- passport-local-mongoose: https://github.com/saintedlama/passport-local-mongoose
